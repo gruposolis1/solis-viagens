@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://gruposolis1.github.io/solis-viagens/sitemap.xml
