@@ -1,3 +1,5 @@
 User-agent: *
 Allow: /
-Sitemap: https://gruposolis1.github.io/solis-viagens/sitemap.xml
+Disallow: /assets/email/
+
+Sitemap: https://solisviagens.com.br/sitemap.xml
