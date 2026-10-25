@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="preload" as="image" href="assets/film/cap-1-poster.jpg">
-  <link rel="stylesheet" href="assets/site.css?v=2">
+  <link rel="stylesheet" href="assets/site.css?v=3">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"TravelAgency","name":"Solis Viagens","url":"https://solisviagens.com.br/","image":"https://solisviagens.com.br/assets/og/solis-viagens-og.png","telephone":"+55 31 99237 8593","areaServed":"BR","parentOrganization":{"@type":"Organization","name":"Grupo Solis"}}
   </script>
@@ -56,15 +56,15 @@
   </header>
 
   <main>
-    <!-- Filme rolado: um único filme de 15s em 5 trechos seguidos, um por capítulo. -->
+    <!-- Filme rolado: um único filme de 15s em 5 trechos seguidos, um por capítulo, desenhado quadro a quadro num canvas. -->
     <section class="filme" id="filme">
       <div class="filme__palco">
         <div class="filme__midia" aria-hidden="true">
-          <figure class="filme__camada" data-clip="assets/film/cap-1.mp4" data-mobile-clip="assets/film/cap-1-mobile.mp4"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-1-mobile-poster.jpg"><img src="assets/film/cap-1-poster.jpg" alt="" fetchpriority="high"></picture></figure>
-          <figure class="filme__camada" data-clip="assets/film/cap-2.mp4" data-mobile-clip="assets/film/cap-2-mobile.mp4"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-2-mobile-poster.jpg"><img src="assets/film/cap-2-poster.jpg" alt="" loading="lazy"></picture></figure>
-          <figure class="filme__camada" data-clip="assets/film/cap-3.mp4" data-mobile-clip="assets/film/cap-3-mobile.mp4"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-3-mobile-poster.jpg"><img src="assets/film/cap-3-poster.jpg" alt="" loading="lazy"></picture></figure>
-          <figure class="filme__camada" data-clip="assets/film/cap-4.mp4" data-mobile-clip="assets/film/cap-4-mobile.mp4"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-4-mobile-poster.jpg"><img src="assets/film/cap-4-poster.jpg" alt="" loading="lazy"></picture></figure>
-          <figure class="filme__camada" data-clip="assets/film/cap-5.mp4" data-mobile-clip="assets/film/cap-5-mobile.mp4"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-5-mobile-poster.jpg"><img src="assets/film/cap-5-poster.jpg" alt="" loading="lazy"></picture></figure>
+          <figure class="filme__camada" data-frames="assets/frames/cap-1" data-count="36"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-1-mobile-poster.jpg"><img src="assets/film/cap-1-poster.jpg" alt="" fetchpriority="high"></picture></figure>
+          <figure class="filme__camada" data-frames="assets/frames/cap-2" data-count="48"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-2-mobile-poster.jpg"><img src="assets/film/cap-2-poster.jpg" alt="" loading="lazy"></picture></figure>
+          <figure class="filme__camada" data-frames="assets/frames/cap-3" data-count="24"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-3-mobile-poster.jpg"><img src="assets/film/cap-3-poster.jpg" alt="" loading="lazy"></picture></figure>
+          <figure class="filme__camada" data-frames="assets/frames/cap-4" data-count="36"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-4-mobile-poster.jpg"><img src="assets/film/cap-4-poster.jpg" alt="" loading="lazy"></picture></figure>
+          <figure class="filme__camada" data-frames="assets/frames/cap-5" data-count="37"><picture><source media="(hover: none) and (pointer: coarse), (max-width: 860px)" srcset="assets/film/cap-5-mobile-poster.jpg"><img src="assets/film/cap-5-poster.jpg" alt="" loading="lazy"></picture></figure>
         </div>
         <div class="filme__progresso" aria-hidden="true"><span></span></div>
         <nav class="filme__rota" aria-label="Capítulos">
@@ -222,6 +222,6 @@
     <span class="cta-flutuante__anel" aria-hidden="true"></span>
   </a>
 
-  <script src="assets/site.js" defer></script>
+  <script src="assets/site.js?v=2" defer></script>
 </body>
 </html>
