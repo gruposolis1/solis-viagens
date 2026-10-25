@@ -75,7 +75,9 @@ button { font: inherit; color: inherit; }
 .cap__pin { position: sticky; top: 0; min-height: 100dvh; display: flex; align-items: center; padding: clamp(5rem, 9vw, 8rem) clamp(1.25rem, 6vw, 6rem); }
 .cap--dir .cap__pin { justify-content: flex-end; }
 .cap__txt { position: relative; width: min(40rem, 48vw); pointer-events: auto; }
-.cap__txt::before { content: ""; position: absolute; z-index: -1; inset: -3rem -5rem; pointer-events: none; background: radial-gradient(ellipse at center, rgb(15 34 51 / 0.88) 0%, rgb(15 34 51 / 0.58) 52%, transparent 76%); }
+/* Sem caixa atrás do texto: a leitura vem da sombra nas letras e de um véu uniforme no vídeo, sem bordas. */
+.filme__palco::after { content: ""; position: absolute; z-index: 4; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(15 34 51 / 0.32) 0%, rgb(15 34 51 / 0.12) 38%, rgb(15 34 51 / 0.12) 62%, rgb(15 34 51 / 0.4) 100%); }
+.cap__kicker, .cap__titulo, .cap__corpo { text-shadow: 0 1px 2px rgb(15 34 51 / 0.55), 0 4px 28px rgb(15 34 51 / 0.6); }
 .cap__kicker { margin-bottom: 1rem; color: var(--ambar); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .cap__titulo { max-width: 13ch; font-family: var(--display); font-stretch: 118%; font-weight: 750; font-size: clamp(2.5rem, 5.4vw, 5.6rem); line-height: 0.98; letter-spacing: -0.03em; text-wrap: balance; }
 .cap__corpo { max-width: 42ch; margin-top: 1.5rem; color: var(--texto-2); font-size: clamp(1rem, 1.35vw, 1.2rem); line-height: 1.55; }
@@ -87,7 +89,7 @@ button { font: inherit; color: inherit; }
   .filme__rota { display: none; }
   .cap__pin, .cap--dir .cap__pin { align-items: flex-end; justify-content: flex-start; padding: 6.5rem max(1.25rem, env(safe-area-inset-right)) calc(5.5rem + env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left)); }
   .cap__txt { width: min(100%, 36rem); }
-  .cap__txt::before { inset: -4rem -50vw -10rem; background: linear-gradient(to top, var(--noite) 0%, rgb(15 34 51 / 0.82) 58%, transparent 100%); }
+  .cap__txt::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -4rem -50vw -10rem; background: linear-gradient(to top, var(--noite) 0%, rgb(15 34 51 / 0.82) 58%, transparent 100%); }
   .cap__titulo { max-width: 14ch; font-size: clamp(2.2rem, 10.5vw, 4.5rem); }
 }
 
