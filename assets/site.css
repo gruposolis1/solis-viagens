@@ -58,11 +58,11 @@ button { font: inherit; color: inherit; }
 /* ---------- Filme rolado ---------- */
 .filme { position: relative; isolation: isolate; overflow-x: clip; --progresso: 0; }
 .filme__palco { position: sticky; top: 0; z-index: 0; height: 100dvh; overflow: hidden; background: var(--noite); }
-.filme__midia, .filme__camada, .filme__camada picture, .filme__camada img, .filme__camada video { position: absolute; inset: 0; width: 100%; height: 100%; }
+.filme__midia, .filme__camada, .filme__camada picture, .filme__camada img, .filme__camada video, .filme__camada canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .filme__camada { overflow: hidden; opacity: 0; will-change: opacity; }
 .filme__camada:first-child { opacity: 1; }
-.filme__camada img, .filme__camada video { object-fit: cover; object-position: 50% 50%; }
-.filme__camada video { z-index: 1; }
+.filme__camada img, .filme__camada video, .filme__camada canvas { object-fit: cover; object-position: 50% 50%; }
+.filme__camada canvas { z-index: 1; display: block; }
 .filme__camada[data-pintado="true"] img { visibility: hidden; }
 .filme__progresso { position: absolute; z-index: 5; inset: 0 0 auto; height: 2px; background: rgb(243 245 248 / 0.14); }
 .filme__progresso span { display: block; height: 100%; background: var(--ambar); transform: scaleX(var(--progresso)); transform-origin: left; }

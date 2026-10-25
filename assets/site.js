@@ -14,8 +14,9 @@
   document.querySelectorAll('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
 
   /* ---------- Filme rolado ----------
-     Cada capítulo tem um trecho do filme. O trecho é baixado como Blob (para a busca de quadro
-     funcionar em qualquer servidor) e o tempo do vídeo segue a posição da rolagem. */
+     Cada capítulo tem um trecho do filme em quadros WebP (d = computador, m = celular vertical).
+     Os quadros são desenhados num canvas conforme a rolagem, com suavização e mistura entre
+     quadros vizinhos. Vídeo com busca de tempo trava no celular; quadros correm lisos em qualquer aparelho. */
   function scrollFilm(root) {
     const layers = [...root.querySelectorAll('.filme__camada')];
     const bands = [...root.querySelectorAll('.cap')];
@@ -28,22 +29,33 @@
     const isMobile = () => coarse || small.matches;
     const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
     const smooth = v => { const x = clamp(v); return x * x * (3 - 2 * x); };
+    const LERP = 0.14;
 
-    const segs = layers.map((layer, i) => ({
-      layer, band: bands[i], clip: layer.dataset.clip, mobileClip: layer.dataset.mobileClip,
-      start: 0, end: 0, current: 0, target: 0, visible: i === 0,
-      loading: false, ready: false, failed: false, source: null, video: null, url: null, abort: null,
-    }));
-    const sourceFor = s => (isMobile() && s.mobileClip ? s.mobileClip : s.clip);
+    const segs = layers.map((layer, i) => {
+      const canvas = document.createElement('canvas');
+      layer.append(canvas);
+      return {
+        layer, band: bands[i], canvas, ctx: canvas.getContext('2d', { alpha: false }),
+        dir: layer.dataset.frames, count: Number(layer.dataset.count) || 0,
+        start: 0, end: 0, current: 0, target: 0, visible: i === 0,
+        kind: null, images: [], loaded: null, loading: false, drawn: -1,
+      };
+    });
+    const kindNow = () => (isMobile() ? 'm' : 'd');
+    const frameUrl = (s, k, n) => `${s.dir}/${k}-${String(n + 1).padStart(3, '0')}.webp`;
 
-    let rootTop = 0, total = 1, vh = innerHeight, lastWidth = innerWidth, dirty = true, active = -1, userReady = false;
+    let rootTop = 0, total = 1, vh = innerHeight, lastWidth = innerWidth, dirty = true, active = -1;
 
+    // Solta os quadros de trechos longe da tela para não estourar a memória do celular.
     function unload(s) {
-      if (s.abort) s.abort.abort();
-      if (s.video) s.video.remove();
-      if (s.url) URL.revokeObjectURL(s.url);
-      Object.assign(s, { abort: null, video: null, url: null, source: null, loading: false, ready: false, failed: false });
+      s.images = []; s.loaded = null; s.kind = null; s.loading = false; s.drawn = -1;
       delete s.layer.dataset.pintado;
+    }
+
+    function sizeCanvas(s) {
+      const dpr = Math.min(devicePixelRatio || 1, isMobile() ? 2 : 1.5);
+      const w = Math.round(s.layer.clientWidth * dpr), h = Math.round(s.layer.clientHeight * dpr);
+      if (s.canvas.width !== w || s.canvas.height !== h) { s.canvas.width = w; s.canvas.height = h; s.drawn = -1; }
     }
 
     function layout() {
@@ -52,7 +64,8 @@
       vh = innerHeight;
       lastWidth = innerWidth;
       for (const s of segs) {
-        if (s.source && s.source !== sourceFor(s)) unload(s);
+        if (s.kind && s.kind !== kindNow()) unload(s);
+        sizeCanvas(s);
         const r = s.band.getBoundingClientRect();
         s.start = r.top + y - rootTop;
         s.end = s.start + r.height;
@@ -61,41 +74,63 @@
       dirty = true;
     }
 
-    async function prime(video) {
-      if (!video || !isMobile()) return;
-      try { await video.play(); video.pause(); } catch (e) { /* fica no pôster */ }
+    function loadFrame(s, k, n) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = () => { if (s.kind === k) { s.images[n] = img; s.loaded[n] = 1; } resolve(); };
+        img.onerror = () => resolve();
+        img.src = frameUrl(s, k, n);
+      });
     }
 
+    // Baixa primeiro o quadro onde a rolagem está e depois os vizinhos, em lotes.
     async function load(s) {
-      const src = sourceFor(s);
-      if (reduceMotion || s.loading || s.ready || s.failed || !src) return;
-      s.loading = true; s.source = src; s.abort = new AbortController();
-      const req = s.abort;
-      try {
-        const res = await fetch(src, { signal: req.signal });
-        if (!res.ok) throw new Error(String(res.status));
-        const blob = await res.blob();
-        if (req.signal.aborted || s.source !== src) return;
-        const url = URL.createObjectURL(blob);
-        const v = document.createElement('video');
-        v.muted = true; v.playsInline = true; v.preload = 'auto';
-        v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
-        v.src = url;
-        v.addEventListener('loadedmetadata', () => { if (s.video === v) { s.ready = true; s.loading = false; dirty = true; } }, { once: true });
-        v.addEventListener('loadeddata', () => { if (userReady && s.video === v) prime(v); }, { once: true });
-        v.addEventListener('seeked', () => { if (s.video === v) s.layer.dataset.pintado = 'true'; }, { once: true });
-        v.addEventListener('error', () => {
-          if (s.video !== v) return;
-          v.remove(); URL.revokeObjectURL(url);
-          Object.assign(s, { video: null, url: null, failed: true, loading: false, ready: false });
-          delete s.layer.dataset.pintado;
-        }, { once: true });
-        s.layer.append(v);
-        s.video = v; s.url = url;
-      } catch (e) {
-        if (req.signal.aborted || s.source !== src) return;
-        s.failed = true; s.loading = false;
+      if (reduceMotion || s.loading || s.kind || !s.count) return;
+      const k = kindNow();
+      s.kind = k; s.loading = true; s.images = new Array(s.count); s.loaded = new Uint8Array(s.count);
+      const from = Math.round(s.target * (s.count - 1));
+      const order = [...Array(s.count).keys()].sort((a, b) => Math.abs(a - from) - Math.abs(b - from));
+      for (let i = 0; i < order.length; i += 6) {
+        if (s.kind !== k) return;
+        await Promise.all(order.slice(i, i + 6).map(n => loadFrame(s, k, n)));
+        s.drawn = -1;
       }
+      if (s.kind === k) s.loading = false;
+    }
+
+    function nearest(s, n) {
+      if (s.loaded[n]) return n;
+      for (let d = 1; d < s.count; d++) {
+        if (n - d >= 0 && s.loaded[n - d]) return n - d;
+        if (n + d < s.count && s.loaded[n + d]) return n + d;
+      }
+      return -1;
+    }
+
+    function cover(s, img, alpha) {
+      const cw = s.canvas.width, ch = s.canvas.height;
+      const k = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const w = img.naturalWidth * k, h = img.naturalHeight * k;
+      s.ctx.globalAlpha = alpha;
+      s.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+    }
+
+    // Desenha o quadro atual e mistura o seguinte pela fração, para o movimento não "pular".
+    function draw(s) {
+      if (!s.loaded || !s.count) return;
+      const pos = clamp(s.current) * (s.count - 1);
+      const key = Math.round(pos * 8);
+      if (key === s.drawn) return;
+      const a = nearest(s, Math.floor(pos));
+      if (a < 0) return;
+      const b = Math.min(a + 1, s.count - 1);
+      const frac = a === Math.floor(pos) && s.loaded[b] ? pos - a : 0;
+      cover(s, s.images[a], 1);
+      if (frac > 0.02 && b !== a) cover(s, s.images[b], frac);
+      s.ctx.globalAlpha = 1;
+      s.drawn = key;
+      s.layer.dataset.pintado = 'true';
     }
 
     function readScroll() {
@@ -112,6 +147,7 @@
         s.layer.style.opacity = String(op);
         s.layer.style.zIndex = i === cur ? '2' : '1';
         if (y > s.start - 1.5 * vh && y < s.end + 1.5 * vh) load(s);
+        else if (y < s.start - 3 * vh || y > s.end + 3 * vh) { if (s.kind) unload(s); }
       });
       if (cur !== active) {
         active = cur;
@@ -123,21 +159,18 @@
       root.style.setProperty('--progresso', String(clamp(y / total)));
     }
 
-    function updateVideos() {
-      const eps = isMobile() ? 0.02 : 0.008;
+    function updateFrames() {
       for (const s of segs) {
-        const v = s.video;
-        if (!v || !s.ready || v.seeking) continue;
-        if (!s.visible && Math.abs(s.current - s.target) < 0.002) continue;
-        s.current += (s.target - s.current) * 0.2;
-        const t = clamp(s.current, 0, 0.999) * (v.duration || 1);
-        if (Math.abs(v.currentTime - t) > eps) { try { v.currentTime = t; } catch (e) { /* mantém o último quadro */ } }
+        if (!s.visible) { s.current = s.target; continue; }
+        const d = s.target - s.current;
+        s.current = Math.abs(d) < 0.0005 ? s.target : s.current + d * LERP;
+        draw(s);
       }
     }
 
     function tick() {
       if (dirty) { dirty = false; readScroll(); }
-      updateVideos();
+      updateFrames();
       requestAnimationFrame(tick);
     }
 
@@ -145,9 +178,6 @@
     addEventListener('resize', () => { if (coarse && innerWidth === lastWidth) return; layout(); });
     addEventListener('orientationchange', layout);
     addEventListener('load', layout);
-    const firstGesture = () => { if (userReady) return; userReady = true; segs.forEach(s => prime(s.video)); };
-    addEventListener('pointerdown', firstGesture, { once: true, passive: true });
-    addEventListener('touchstart', firstGesture, { once: true, passive: true });
 
     routeButtons.forEach(b => b.addEventListener('click', () => {
       const s = segs[Number(b.dataset.ir)];
