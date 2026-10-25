@@ -95,7 +95,8 @@ button { font: inherit; color: inherit; }
   .filme__rota { display: none; }
   .cap__pin, .cap--dir .cap__pin { align-items: flex-end; justify-content: flex-start; padding: 6.5rem max(1.25rem, env(safe-area-inset-right)) calc(5.5rem + env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left)); }
   .cap__txt { width: min(100%, 36rem); }
-  .cap__txt::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -4rem -50vw -10rem; background: linear-gradient(to top, var(--noite) 0%, rgb(15 34 51 / 0.82) 58%, transparent 100%); }
+  /* No celular o texto fica embaixo: o véu da tela inteira escurece só a metade de baixo, sem caixa nem borda. */
+  .filme__palco::after { background: linear-gradient(180deg, rgb(15 34 51 / 0.3) 0%, rgb(15 34 51 / 0.05) 30%, rgb(15 34 51 / 0.25) 55%, rgb(15 34 51 / 0.6) 100%); }
   .cap__titulo { max-width: 14ch; font-size: clamp(2.2rem, 10.5vw, 4.5rem); }
   .cap__kicker, .cap__titulo, .cap__corpo { text-shadow: 0 1px 2px rgb(15 34 51 / 0.6), 0 2px 12px rgb(15 34 51 / 0.5); }
 }
