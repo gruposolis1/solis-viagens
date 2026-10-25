@@ -198,13 +198,29 @@
   const film = document.getElementById('filme');
   if (film) scrollFilm(film);
 
-  // Menu com fundo sólido quando o filme termina (ou em páginas sem filme).
+  // Menu com fundo sólido quando o filme ou a capa terminam (ou em páginas sem nenhum dos dois).
   const topo = document.querySelector('.topo');
+  const capa = film || document.querySelector('[data-hero]');
   if (topo) {
-    const solid = () => topo.classList.toggle('topo--solido', !film || film.getBoundingClientRect().bottom < 80);
+    const solid = () => topo.classList.toggle('topo--solido', !capa || capa.getBoundingClientRect().bottom < 80);
     addEventListener('scroll', solid, { passive: true });
     solid();
   }
+
+  // Prazo de oferta: durante o período mostra quanto falta; depois do fim troca pelo aviso de encerrada.
+  document.querySelectorAll('[data-ate]').forEach(el => {
+    const de = Date.parse(el.dataset.de || ''), ate = Date.parse(el.dataset.ate);
+    const tick = () => {
+      const now = Date.now();
+      if (now > ate) { el.textContent = el.dataset.txtFim || ''; return; }
+      if (de && now < de) return;
+      const min = Math.floor((ate - now) / 60000);
+      const d = Math.floor(min / 1440), h = Math.floor((min % 1440) / 60);
+      el.textContent = d > 0 ? `Faltam ${d} ${d === 1 ? 'dia' : 'dias'} e ${h}h para o fim da oferta` : `Últimas ${h}h ${min % 60}min de oferta`;
+      setTimeout(tick, 30000);
+    };
+    tick();
+  });
 
   /* ---------- Formulário → mensagem no WhatsApp. Nada é gravado pelo site. ---------- */
   const form = document.getElementById('lead-form');

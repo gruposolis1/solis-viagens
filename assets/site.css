@@ -233,3 +233,38 @@ button { font: inherit; color: inherit; }
 /* Menu ganha fundo sólido depois do filme. */
 .topo { transition: background-color .3s, box-shadow .3s; }
 .topo--solido { background: rgb(15 34 51 / 0.94); box-shadow: 0 1px 0 var(--linha); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+
+/* ---------- Página de Miami ---------- */
+.mia-hero { position: relative; isolation: isolate; display: flex; align-items: center; min-height: 100vh; min-height: 100svh; padding: 7rem clamp(1.25rem, 6vw, 6rem) 5rem; overflow: hidden; }
+.mia-hero__foto, .mia-hero__foto img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
+.mia-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(15 34 51 / 0.72) 0%, rgb(15 34 51 / 0.35) 40%, transparent 65%), linear-gradient(180deg, rgb(15 34 51 / 0.45) 0%, transparent 40%, rgb(15 34 51 / 0.7) 100%); }
+.mia-hero__in { width: 100%; }
+.mia-hero__titulo { max-width: 12ch; font-size: clamp(2.6rem, 7vw, 6.2rem); text-shadow: 0 2px 24px rgb(15 34 51 / 0.45); }
+.mia-hero__titulo em { font-style: normal; color: var(--ambar); }
+.mia-hero__corpo { max-width: 44ch; margin-top: 1.5rem; color: var(--nevoa); font-size: clamp(1.05rem, 1.5vw, 1.25rem); line-height: 1.55; text-shadow: 0 1px 12px rgb(15 34 51 / 0.6); }
+.mia-hero .cap__acoes { align-items: center; gap: 1.5rem; }
+.mia-prazo { display: inline-block; margin-top: 2rem; padding: 0.55rem 1rem; border: 1px solid rgb(232 150 12 / 0.6); border-radius: 999px; background: rgb(15 34 51 / 0.55); color: var(--nevoa); font-size: 0.9rem; font-weight: 600; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+@media (max-width: 860px) {
+  .mia-hero { align-items: flex-end; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+  .mia-hero__foto img { object-position: 50% 40%; }
+  .mia-hero::after { background: linear-gradient(180deg, rgb(15 34 51 / 0.5) 0%, rgb(15 34 51 / 0.05) 35%, rgb(15 34 51 / 0.55) 60%, rgb(15 34 51 / 0.9) 100%); }
+}
+.mia-porque { border-top: 1px solid var(--linha); }
+.mia-tres { display: grid; gap: 3rem; margin-top: 3.5rem; }
+.mia-tres li p { max-width: 36ch; margin-top: 0.75rem; color: var(--texto-2); line-height: 1.65; }
+.mia-tres .h3 { margin-top: 1rem; }
+.mia-tres__n { display: block; font-size: clamp(3rem, 6vw, 4.5rem); color: var(--ambar); }
+@media (min-width: 768px) { .mia-tres { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; } }
+.mia-roteiros-secao { background: var(--noite-2); }
+.mia-roteiros { display: grid; gap: 2.5rem; margin-top: 3.5rem; }
+.mia-roteiros > li { display: flex; flex-direction: column; gap: 1.25rem; }
+.mia-roteiros img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 6px; transition: transform .6s ease-out; }
+.mia-roteiros > li:hover img { transform: scale(1.02); }
+.mia-roteiros p { margin-top: 0.75rem; color: var(--texto-2); line-height: 1.65; }
+@media (min-width: 768px) { .mia-roteiros { grid-template-columns: repeat(3, 1fr); gap: 2rem; } }
+.mia-condicoes { margin-top: 2.5rem; font-size: 0.8rem; color: var(--texto-3); line-height: 1.6; }
+
+/* Faixa de Miami na página inicial. */
+.faixa-miami { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem); border-block: 1px solid var(--linha); background: linear-gradient(90deg, rgb(232 150 12 / 0.16), transparent 70%); }
+.faixa-miami p { font-family: var(--display); font-stretch: 112%; font-size: clamp(1.15rem, 2.4vw, 1.6rem); font-weight: 700; }
+.faixa-miami p span { color: var(--ambar); }
