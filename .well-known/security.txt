@@ -1,0 +1,4 @@
+Contact: mailto:contato@solisviagens.com.br
+Expires: 2027-10-24T00:00:00.000Z
+Preferred-Languages: pt, en
+Canonical: https://solisviagens.com.br/.well-known/security.txt
