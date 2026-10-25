@@ -14,9 +14,9 @@
   document.querySelectorAll('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
 
   /* ---------- Filme rolado ----------
-     Cada capítulo tem um trecho do filme em quadros WebP (d = computador, m = celular vertical).
-     Os quadros são desenhados num canvas conforme a rolagem, com suavização e mistura entre
-     quadros vizinhos. Vídeo com busca de tempo trava no celular; quadros correm lisos em qualquer aparelho. */
+     Cada capítulo tem um trecho do filme em quadros WebP: d = computador (12 por segundo, com
+     mistura entre vizinhos), m = celular vertical (24 por segundo, um desenho por quadro).
+     Cada quadro é decodificado antes de entrar no filme, para nada ser decodificado durante a rolagem. */
   function scrollFilm(root) {
     const layers = [...root.querySelectorAll('.filme__camada')];
     const bands = [...root.querySelectorAll('.cap')];
@@ -29,15 +29,15 @@
     const isMobile = () => coarse || small.matches;
     const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
     const smooth = v => { const x = clamp(v); return x * x * (3 - 2 * x); };
-    const LERP = 0.14;
+    const lerp = () => (isMobile() ? 0.2 : 0.14);
 
     const segs = layers.map((layer, i) => {
       const canvas = document.createElement('canvas');
       layer.append(canvas);
       return {
         layer, band: bands[i], canvas, ctx: canvas.getContext('2d', { alpha: false }),
-        dir: layer.dataset.frames, count: Number(layer.dataset.count) || 0,
-        start: 0, end: 0, current: 0, target: 0, visible: i === 0,
+        dir: layer.dataset.frames, counts: { d: Number(layer.dataset.countD) || 0, m: Number(layer.dataset.countM) || 0 },
+        count: 0, start: 0, end: 0, current: 0, target: 0, visible: i === 0,
         kind: null, images: [], loaded: null, loading: false, drawn: -1,
       };
     });
@@ -52,8 +52,9 @@
       delete s.layer.dataset.pintado;
     }
 
+    // Os quadros do celular têm 432 px de largura: um canvas maior só gastaria bateria sem ganhar nitidez.
     function sizeCanvas(s) {
-      const dpr = Math.min(devicePixelRatio || 1, isMobile() ? 2 : 1.5);
+      const dpr = Math.min(devicePixelRatio || 1, 1.25);
       const w = Math.round(s.layer.clientWidth * dpr), h = Math.round(s.layer.clientHeight * dpr);
       if (s.canvas.width !== w || s.canvas.height !== h) { s.canvas.width = w; s.canvas.height = h; s.drawn = -1; }
     }
@@ -78,16 +79,19 @@
       return new Promise(resolve => {
         const img = new Image();
         img.decoding = 'async';
-        img.onload = () => { if (s.kind === k) { s.images[n] = img; s.loaded[n] = 1; } resolve(); };
-        img.onerror = () => resolve();
         img.src = frameUrl(s, k, n);
+        img.decode()
+          .then(() => { if (s.kind === k) { s.images[n] = img; s.loaded[n] = 1; } })
+          .catch(() => {})
+          .finally(resolve);
       });
     }
 
     // Baixa primeiro o quadro onde a rolagem está e depois os vizinhos, em lotes.
     async function load(s) {
-      if (reduceMotion || s.loading || s.kind || !s.count) return;
       const k = kindNow();
+      if (reduceMotion || s.loading || s.kind || !s.counts[k]) return;
+      s.count = s.counts[k];
       s.kind = k; s.loading = true; s.images = new Array(s.count); s.loaded = new Uint8Array(s.count);
       const from = Math.round(s.target * (s.count - 1));
       const order = [...Array(s.count).keys()].sort((a, b) => Math.abs(a - from) - Math.abs(b - from));
@@ -116,16 +120,18 @@
       s.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
     }
 
-    // Desenha o quadro atual e mistura o seguinte pela fração, para o movimento não "pular".
+    // Computador: desenha o quadro e mistura o seguinte pela fração. Celular: um quadro por desenho,
+    // que com 24 por segundo já corre liso e custa metade.
     function draw(s) {
       if (!s.loaded || !s.count) return;
       const pos = clamp(s.current) * (s.count - 1);
-      const key = Math.round(pos * 8);
+      const blend = s.kind === 'd';
+      const key = blend ? Math.round(pos * 8) : Math.round(pos);
       if (key === s.drawn) return;
-      const a = nearest(s, Math.floor(pos));
+      const a = nearest(s, blend ? Math.floor(pos) : Math.round(pos));
       if (a < 0) return;
       const b = Math.min(a + 1, s.count - 1);
-      const frac = a === Math.floor(pos) && s.loaded[b] ? pos - a : 0;
+      const frac = blend && a === Math.floor(pos) && s.loaded[b] ? pos - a : 0;
       cover(s, s.images[a], 1);
       if (frac > 0.02 && b !== a) cover(s, s.images[b], frac);
       s.ctx.globalAlpha = 1;
@@ -147,7 +153,7 @@
         s.layer.style.opacity = String(op);
         s.layer.style.zIndex = i === cur ? '2' : '1';
         if (y > s.start - 1.5 * vh && y < s.end + 1.5 * vh) load(s);
-        else if (y < s.start - 3 * vh || y > s.end + 3 * vh) { if (s.kind) unload(s); }
+        else if (y < s.start - 2.5 * vh || y > s.end + 2.5 * vh) { if (s.kind) unload(s); }
       });
       if (cur !== active) {
         active = cur;
@@ -163,7 +169,7 @@
       for (const s of segs) {
         if (!s.visible) { s.current = s.target; continue; }
         const d = s.target - s.current;
-        s.current = Math.abs(d) < 0.0005 ? s.target : s.current + d * LERP;
+        s.current = Math.abs(d) < 0.0005 ? s.target : s.current + d * lerp();
         draw(s);
       }
     }

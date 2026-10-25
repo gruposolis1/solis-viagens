@@ -57,7 +57,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- Filme rolado ---------- */
 .filme { position: relative; isolation: isolate; overflow-x: clip; --progresso: 0; }
-.filme__palco { position: sticky; top: 0; z-index: 0; height: 100dvh; overflow: hidden; background: var(--noite); }
+.filme__palco { position: sticky; top: 0; z-index: 0; height: 100vh; height: 100lvh; overflow: hidden; background: var(--noite); }
 .filme__midia, .filme__camada, .filme__camada picture, .filme__camada img, .filme__camada video, .filme__camada canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .filme__camada { overflow: hidden; opacity: 0; will-change: opacity; }
 .filme__camada:first-child { opacity: 1; }
@@ -70,9 +70,15 @@ button { font: inherit; color: inherit; }
 .filme__rota button { min-height: 2.75rem; padding: 0.6rem 0.85rem; border: 0; background: none; cursor: pointer; color: var(--texto-2); font-family: var(--display); font-stretch: 112%; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; }
 .filme__rota button:hover, .filme__rota button[aria-current="step"] { color: var(--nevoa); }
 .filme__rota button[aria-current="step"] { text-decoration: underline; text-decoration-color: var(--ambar); text-decoration-thickness: 0.15em; text-underline-offset: 0.3em; }
-.filme__historia { position: relative; z-index: 3; margin-top: -100dvh; pointer-events: none; }
-.cap { position: relative; min-height: calc(var(--peso, 1.4) * 100dvh); }
-.cap__pin { position: sticky; top: 0; min-height: 100dvh; display: flex; align-items: center; padding: clamp(5rem, 9vw, 8rem) clamp(1.25rem, 6vw, 6rem); }
+.filme__historia { position: relative; z-index: 3; margin-top: -100vh; margin-top: -100lvh; pointer-events: none; }
+.cap { position: relative; min-height: calc(var(--peso, 1.4) * 100vh); min-height: calc(var(--peso, 1.4) * 100svh); }
+#inicio { --peso: 1.5; }
+#destino { --peso: 1.6; }
+.sprite { position: absolute; }
+.s1 { fill: var(--s1, #E8960C); }
+.s2 { fill: var(--s2, #1E5AA8); }
+.s3 { fill: var(--s3, #2F7D4F); }
+.cap__pin { position: sticky; top: 0; min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding: clamp(5rem, 9vw, 8rem) clamp(1.25rem, 6vw, 6rem); }
 .cap--dir .cap__pin { justify-content: flex-end; }
 .cap__txt { position: relative; width: min(40rem, 48vw); pointer-events: auto; }
 /* Sem caixa atrás do texto: a leitura vem da sombra nas letras e de um véu uniforme no vídeo, sem bordas. */
@@ -91,6 +97,7 @@ button { font: inherit; color: inherit; }
   .cap__txt { width: min(100%, 36rem); }
   .cap__txt::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -4rem -50vw -10rem; background: linear-gradient(to top, var(--noite) 0%, rgb(15 34 51 / 0.82) 58%, transparent 100%); }
   .cap__titulo { max-width: 14ch; font-size: clamp(2.2rem, 10.5vw, 4.5rem); }
+  .cap__kicker, .cap__titulo, .cap__corpo { text-shadow: 0 1px 2px rgb(15 34 51 / 0.6), 0 2px 12px rgb(15 34 51 / 0.5); }
 }
 
 /* CTA do capítulo 1: pílula âmbar com um sol que nasce no hover. */
@@ -219,7 +226,7 @@ button { font: inherit; color: inherit; }
   html { scroll-behavior: auto; }
   .entra, .cta-flutuante__anel { animation: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; }
-  .cap { min-height: 100dvh !important; }
+  .cap { min-height: 100svh !important; }
 }
 
 /* Menu ganha fundo sólido depois do filme. */
