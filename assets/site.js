@@ -274,6 +274,7 @@
       if (v) lines.push(`${el.dataset.label}: ${v}`);
     });
     window.open(waUrl(lines.join('\n')), '_blank', 'noopener');
+    document.dispatchEvent(new CustomEvent('solis:lead'));
     form.querySelector('.form-note').textContent = 'Abrimos o WhatsApp com a sua mensagem. É só tocar em enviar.';
   });
 })();
