@@ -268,3 +268,11 @@ button { font: inherit; color: inherit; }
 .faixa-miami { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem); border-block: 1px solid var(--linha); background: linear-gradient(90deg, rgb(232 150 12 / 0.16), transparent 70%); }
 .faixa-miami p { font-family: var(--display); font-stretch: 112%; font-size: clamp(1.15rem, 2.4vw, 1.6rem); font-weight: 700; }
 .faixa-miami p span { color: var(--ambar); }
+
+/* Selo Cadastur (cadastro em andamento) */
+.selo-cadastur { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.75rem; padding: 0.65rem 1.1rem 0.65rem 0.75rem; border: 1px solid var(--linha); border-radius: 999px; background: rgb(30 90 168 / 0.12); color: var(--nevoa); }
+.selo-cadastur__sol { width: 2.25rem; height: 2.25rem; flex: none; --s1: var(--ambar); --s2: var(--claro); --s3: var(--nevoa); }
+.selo-cadastur__txt { display: flex; flex-direction: column; line-height: 1.25; }
+.selo-cadastur__txt b { font-family: var(--display); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.02em; }
+.selo-cadastur__txt small { font-size: 0.75rem; color: var(--texto-2); }
+.selo-cadastur__txt small + small { color: var(--texto-3); }
