@@ -286,3 +286,6 @@ button { font: inherit; color: inherit; }
 @media (max-width: 860px) {
   .filme__palco::after { background: linear-gradient(180deg, rgb(15 34 51 / 0.45) 0%, rgb(15 34 51 / 0.2) 28%, rgb(15 34 51 / 0.5) 52%, rgb(15 34 51 / 0.85) 100%); }
 }
+/* O canvas só aparece depois do primeiro quadro desenhado: até lá fica a imagem de capa, sem tela preta. */
+.filme__camada canvas { visibility: hidden; }
+.filme__camada[data-pintado="true"] canvas { visibility: visible; }

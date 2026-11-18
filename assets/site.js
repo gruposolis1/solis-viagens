@@ -15,7 +15,7 @@
 
   /* ---------- Filme rolado ----------
      Cada capítulo tem um trecho do filme em quadros WebP: d = computador (12 por segundo, com
-     mistura entre vizinhos), m = celular vertical (24 por segundo, um desenho por quadro).
+     mistura entre vizinhos), m = celular vertical em 608x1080 (12 por segundo, também com mistura).
      Cada quadro é decodificado antes de entrar no filme, para nada ser decodificado durante a rolagem. */
   function scrollFilm(root) {
     const layers = [...root.querySelectorAll('.filme__camada')];
@@ -52,9 +52,9 @@
       delete s.layer.dataset.pintado;
     }
 
-    // Os quadros do celular têm 432 px de largura: um canvas maior só gastaria bateria sem ganhar nitidez.
+    // Celular: quadros de 608 px de largura, então o canvas vai até 1,6x a tela; computador fica em 1,25x.
     function sizeCanvas(s) {
-      const dpr = Math.min(devicePixelRatio || 1, 1.25);
+      const dpr = Math.min(devicePixelRatio || 1, s.kind === "m" || isMobile() ? 1.6 : 1.25);
       const w = Math.round(s.layer.clientWidth * dpr), h = Math.round(s.layer.clientHeight * dpr);
       if (s.canvas.width !== w || s.canvas.height !== h) { s.canvas.width = w; s.canvas.height = h; s.drawn = -1; }
     }
@@ -120,12 +120,11 @@
       s.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
     }
 
-    // Computador: desenha o quadro e mistura o seguinte pela fração. Celular: um quadro por desenho,
-    // que com 24 por segundo já corre liso e custa metade.
+    // Desenha o quadro e mistura o seguinte pela fração, nos dois formatos, para a rolagem correr lisa com 12 quadros por segundo.
     function draw(s) {
       if (!s.loaded || !s.count) return;
       const pos = clamp(s.current) * (s.count - 1);
-      const blend = s.kind === 'd';
+      const blend = true;
       const key = blend ? Math.round(pos * 8) : Math.round(pos);
       if (key === s.drawn) return;
       const a = nearest(s, blend ? Math.floor(pos) : Math.round(pos));
