@@ -48,13 +48,14 @@
 
     // Solta os quadros de trechos longe da tela para não estourar a memória do celular.
     function unload(s) {
+      for (const im of s.images) if (im && im.close) im.close();
       s.images = []; s.loaded = null; s.kind = null; s.loading = false; s.drawn = -1;
       delete s.layer.dataset.pintado;
     }
 
-    // Celular: quadros de 608 px de largura, então o canvas vai até 1,6x a tela; computador fica em 1,25x.
+    // Canvas até 1,3x a tela no celular e 1,25x no computador: nítido sem pesar o desenho a cada rolagem.
     function sizeCanvas(s) {
-      const dpr = Math.min(devicePixelRatio || 1, s.kind === "m" || isMobile() ? 1.6 : 1.25);
+      const dpr = Math.min(devicePixelRatio || 1, isMobile() ? 1.3 : 1.25);
       const w = Math.round(s.layer.clientWidth * dpr), h = Math.round(s.layer.clientHeight * dpr);
       if (s.canvas.width !== w || s.canvas.height !== h) { s.canvas.width = w; s.canvas.height = h; s.drawn = -1; }
     }
@@ -81,20 +82,28 @@
         img.decoding = 'async';
         img.src = frameUrl(s, k, n);
         img.decode()
-          .then(() => { if (s.kind === k) { s.images[n] = img; s.loaded[n] = 1; } })
+          // Vira ImageBitmap: fica pronto na placa de vídeo e o celular não precisa decodificar de novo no meio da rolagem.
+          .then(() => (window.createImageBitmap ? createImageBitmap(img).catch(() => img) : img))
+          .then(bmp => {
+            if (s.kind === k) { s.images[n] = bmp; s.loaded[n] = 1; }
+            else if (bmp && bmp.close) bmp.close();
+          })
           .catch(() => {})
           .finally(resolve);
       });
     }
 
-    // Baixa primeiro o quadro onde a rolagem está e depois os vizinhos, em lotes.
+    // Baixa primeiro um quadro a cada 4 (perto de onde a rolagem está) e depois preenche os intermediários,
+    // para o filme ter cobertura no trecho todo logo no início.
     async function load(s) {
       const k = kindNow();
       if (reduceMotion || s.loading || s.kind || !s.counts[k]) return;
       s.count = s.counts[k];
       s.kind = k; s.loading = true; s.images = new Array(s.count); s.loaded = new Uint8Array(s.count);
       const from = Math.round(s.target * (s.count - 1));
-      const order = [...Array(s.count).keys()].sort((a, b) => Math.abs(a - from) - Math.abs(b - from));
+      const byDist = (a, b) => Math.abs(a - from) - Math.abs(b - from);
+      const all = [...Array(s.count).keys()];
+      const order = [...all.filter(n => n % 4 === 0).sort(byDist), ...all.filter(n => n % 4 !== 0).sort(byDist)];
       for (let i = 0; i < order.length; i += 6) {
         if (s.kind !== k) return;
         await Promise.all(order.slice(i, i + 6).map(n => loadFrame(s, k, n)));
@@ -103,19 +112,19 @@
       if (s.kind === k) s.loading = false;
     }
 
+    // Enquanto o trecho carrega, usa o último quadro já pronto antes da posição (e só olha para frente se não
+    // houver nenhum), para a imagem nunca pular para trás e para frente durante a rolagem.
     function nearest(s, n) {
-      if (s.loaded[n]) return n;
-      for (let d = 1; d < s.count; d++) {
-        if (n - d >= 0 && s.loaded[n - d]) return n - d;
-        if (n + d < s.count && s.loaded[n + d]) return n + d;
-      }
+      for (let i = n; i >= 0; i--) if (s.loaded[i]) return i;
+      for (let i = n + 1; i < s.count; i++) if (s.loaded[i]) return i;
       return -1;
     }
 
     function cover(s, img, alpha) {
       const cw = s.canvas.width, ch = s.canvas.height;
-      const k = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-      const w = img.naturalWidth * k, h = img.naturalHeight * k;
+      const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+      const k = Math.max(cw / iw, ch / ih);
+      const w = iw * k, h = ih * k;
       s.ctx.globalAlpha = alpha;
       s.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
     }
