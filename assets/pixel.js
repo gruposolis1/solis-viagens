@@ -1,5 +1,6 @@
-/* Aviso de cookies e Pixel da Meta · Solis Viagens
-   O pixel só carrega depois que a pessoa aceita. Recusar ou não responder: nada é carregado. */
+/* Pixel da Meta · Solis Viagens
+   O pixel liga sozinho em toda visita, sem aviso na tela. Quem quiser desligar usa
+   "Preferências de cookies" no rodapé; a escolha fica guardada no navegador. */
 (function () {
   var PIXEL_ID = '1551995039901447', CHAVE = 'solis-cookies', VALIDADE = 180 * 864e5;
   var miami = /\/miami\/?/.test(location.pathname);
@@ -61,8 +62,8 @@
     aviso = document.createElement('section');
     aviso.className = 'aviso-cookies';
     aviso.setAttribute('aria-label', 'Aviso de cookies');
-    aviso.innerHTML = '<p><b>Cookies de anúncios</b>Usamos o Pixel da Meta para medir nossos anúncios e mostrar a Solis Viagens a quem já visitou o site. Ele só é ativado se você aceitar. <a href="' + (miami ? '../' : '') + 'privacidade.html#cookies">Saiba mais</a></p>' +
-      '<div><button type="button" data-ok="0">Recusar</button><button type="button" data-ok="1">Aceitar</button></div>';
+    aviso.innerHTML = '<p><b>Cookies de anúncios</b>Usamos o Pixel da Meta para medir nossos anúncios e mostrar a Solis Viagens a quem já visitou o site. Você pode desativar quando quiser. <a href="' + (miami ? '../' : '') + 'privacidade.html#cookies">Saiba mais</a></p>' +
+      '<div><button type="button" data-ok="0">Desativar</button><button type="button" data-ok="1">Manter ativado</button></div>';
     aviso.addEventListener('click', function (e) {
       var b = e.target.closest('button');
       if (b) responder(b.dataset.ok === '1');
@@ -85,7 +86,5 @@
     if (a && ativo) fbq('track', 'Contact', { content_name: miami ? 'WhatsApp Miami' : 'WhatsApp site' });
   });
 
-  var resposta = ler();
-  if (resposta === true) carregar();
-  else if (resposta === null) abrir(false);
+  if (ler() !== false) carregar();
 })();
