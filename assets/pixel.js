@@ -18,15 +18,34 @@
     try { localStorage.setItem(CHAVE, JSON.stringify({ ok: ok, em: Date.now() })); } catch (e) {}
   }
 
+  // O script da Meta (~200 KB) só é baixado depois que a página terminou de abrir e o
+  // navegador ficou livre, ou antes disso na primeira interação. Até lá os eventos ficam
+  // na fila do fbq e são enviados assim que o script chega.
+  var injetado = false;
+  function injetar() {
+    if (injetado) return;
+    injetado = true;
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(s);
+  }
+  function injetarDepois() {
+    var ocioso = window.requestIdleCallback || function (f) { return setTimeout(f, 1500); };
+    var agendar = function () { ocioso(injetar, { timeout: 3000 }); };
+    if (document.readyState === 'complete') agendar();
+    else window.addEventListener('load', agendar, { once: true });
+    ['pointerdown', 'keydown', 'scroll'].forEach(function (ev) {
+      window.addEventListener(ev, injetar, { once: true, passive: true });
+    });
+  }
+
   function carregar() {
     if (ativo) return;
     ativo = true;
     var n = window.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
     if (!window._fbq) window._fbq = n;
     n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
-    var s = document.createElement('script');
-    s.async = true; s.src = 'https://connect.facebook.net/en_US/fbevents.js';
-    document.head.appendChild(s);
+    injetarDepois();
     // Sem coleta automática: só vão os eventos escritos aqui, nunca o conteúdo do formulário.
     fbq('set', 'autoConfig', false, PIXEL_ID);
     fbq('init', PIXEL_ID);
