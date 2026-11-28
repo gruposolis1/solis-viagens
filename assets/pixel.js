@@ -4,6 +4,8 @@
 (function () {
   var PIXEL_ID = '1551995039901447', CHAVE = 'solis-cookies', VALIDADE = 180 * 864e5;
   var miami = /\/miami\/?/.test(location.pathname);
+  var destino = document.body.dataset.destino || '';
+  var origem = miami ? 'Miami' : destino || 'site';
   var ativo = false, aviso = null, voltarFoco = null;
 
   function ler() {
@@ -30,6 +32,7 @@
     fbq('init', PIXEL_ID);
     fbq('track', 'PageView');
     if (miami) fbq('track', 'ViewContent', { content_name: 'Passagens para Miami', content_category: 'Passagem aérea' });
+    else if (destino) fbq('track', 'ViewContent', { content_name: destino, content_category: 'Destino' });
   }
 
   function apagarCookies() {
@@ -62,7 +65,7 @@
     aviso = document.createElement('section');
     aviso.className = 'aviso-cookies';
     aviso.setAttribute('aria-label', 'Aviso de cookies');
-    aviso.innerHTML = '<p><b>Cookies de anúncios</b>Usamos o Pixel da Meta para medir nossos anúncios e mostrar a Solis Viagens a quem já visitou o site. Você pode desativar quando quiser. <a href="' + (miami ? '../' : '') + 'privacidade.html#cookies">Saiba mais</a></p>' +
+    aviso.innerHTML = '<p><b>Cookies de anúncios</b>Usamos o Pixel da Meta para medir nossos anúncios e mostrar a Solis Viagens a quem já visitou o site. Você pode desativar quando quiser. <a href="' + (miami || destino ? '../' : '') + 'privacidade.html#cookies">Saiba mais</a></p>' +
       '<div><button type="button" data-ok="0">Desativar</button><button type="button" data-ok="1">Manter ativado</button></div>';
     aviso.addEventListener('click', function (e) {
       var b = e.target.closest('button');
@@ -79,11 +82,11 @@
     b.addEventListener('click', function () { abrir(true); });
   });
   document.addEventListener('solis:lead', function () {
-    if (ativo) fbq('track', 'Lead', { content_name: miami ? 'Cotação Miami' : 'Orçamento site' });
+    if (ativo) fbq('track', 'Lead', { content_name: 'Orçamento ' + origem });
   });
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[data-wa]');
-    if (a && ativo) fbq('track', 'Contact', { content_name: miami ? 'WhatsApp Miami' : 'WhatsApp site' });
+    if (a && ativo) fbq('track', 'Contact', { content_name: 'WhatsApp ' + origem });
   });
 
   if (ler() !== false) carregar();

@@ -298,3 +298,8 @@ button { font: inherit; color: inherit; }
 main .link-botao { text-decoration: underline; text-underline-offset: 0.2em; }
 .link-botao:hover { color: var(--nevoa); }
 @media (max-width: 860px) { .com-aviso .cta-flutuante { bottom: calc(2rem + var(--aviso, 0px) + env(safe-area-inset-bottom)); } }
+
+/* Destinos na página inicial */
+.destinos a { display: flex; flex-direction: column; gap: 1.25rem; height: 100%; color: inherit; }
+.destinos a:hover img { transform: scale(1.02); }
+.destinos .cta-rota { margin-top: auto; }
